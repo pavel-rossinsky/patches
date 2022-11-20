@@ -1,6 +1,6 @@
 --- /dev/null
 +++ ../lib/Doctrine/DBAL/SQLParserUtils.php
-@@ -119,13 +119,33 @@
+@@ -119,10 +119,22 @@
  
          $carry = [];
  
@@ -8,7 +8,6 @@
 -            preg_match_all('/' . $token . '/', $fragment[0], $matches, PREG_OFFSET_CAPTURE);
 -            foreach ($matches[0] as $placeholder) {
 -                $collector($placeholder[0], $placeholder[1], $fragment[1], $carry);
-+        // FIX: BEGIN
 +        if (preg_match("/(ARRAY|'{2,})/i", $statement) === 0) {
 +            preg_match_all(
 +                "/(?<![\"'`\[[:alpha:]])($token)(?![\"'`\]])/",
@@ -18,24 +17,13 @@
 +            );
 +            foreach ($matches[1] as $singleMatch) {
 +                $collector($singleMatch[0], $singleMatch[1], 0, $carry);
-             }
++            }
 +        } else {
-+            // FIX: END
-+            
-+            // Native code: BEGIN
 +            foreach (self::getUnquotedStatementFragments($statement) as $fragment) {
 +                preg_match_all('/' . $token . '/', $fragment[0], $matches, PREG_OFFSET_CAPTURE);
 +                foreach ($matches[0] as $placeholder) {
 +                    $collector($placeholder[0], $placeholder[1], $fragment[1], $carry);
 +                }
-+            }
-+            // Native code: END
-+            
-+            // FIX: BEGIN
+             }
          }
--
-+        // FIX: END
-+        
-         return $carry;
-     }
  
